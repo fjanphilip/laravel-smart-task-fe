@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>laravel-smart-task-fe</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts & Material Icons preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Asynchronous Non-blocking Google Fonts & Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Geist:wght@400;500&family=Space+Mono:wght@400;700&display=swap" media="print" onload="this.media='all'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Geist:wght@400;500&family=Space+Mono:wght@400;700&display=swap" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+    </noscript>
+    
+    <!-- Custom Tailwind Configuration -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#cac8ac",
+              "outline": "#797860",
+              "error": "#ba1a1a",
+              "background": "#f9f9f9",
+              "on-secondary": "#ffffff",
+              "on-background": "#1a1c1c",
+              "on-error-container": "#93000a",
+              "on-primary": "#ffffff",
+              "primary-fixed-dim": "#cdcd00",
+              "surface-tint": "#626200",
+              "on-error": "#ffffff",
+              "tertiary-fixed": "#00fbfb",
+              "surface-bright": "#f9f9f9",
+              "on-secondary-fixed": "#380038",
+              "secondary-fixed": "#ffd7f5",
+              "secondary-fixed-dim": "#ffabf3",
+              "primary-fixed": "#eaea18",
+              "surface-container": "#eeeeee",
+              "error-container": "#ffdad6",
+              "inverse-on-surface": "#f0f1f1",
+              "surface-container-highest": "#e2e2e2",
+              "on-tertiary-fixed-variant": "#004f4f",
+              "on-primary-fixed": "#1d1d00",
+              "on-primary-fixed-variant": "#494900",
+              "primary-container": "#f4f428",
+              "on-tertiary-container": "#007777",
+              "surface": "#f9f9f9",
+              "on-surface-variant": "#484832",
+              "on-secondary-fixed-variant": "#810081",
+              "surface-variant": "#e2e2e2",
+              "inverse-primary": "#cdcd00",
+              "on-tertiary": "#ffffff",
+              "secondary-container": "#fe00fe",
+              "surface-container-low": "#f3f3f4",
+              "primary": "#626200",
+              "surface-container-high": "#e8e8e8",
+              "tertiary-fixed-dim": "#00dddd",
+              "tertiary-container": "#8afffe",
+              "on-secondary-container": "#500050",
+              "surface-dim": "#dadada",
+              "secondary": "#a900a9",
+              "on-tertiary-fixed": "#002020",
+              "on-surface": "#1a1c1c",
+              "tertiary": "#006a6a",
+              "inverse-surface": "#2f3131",
+              "on-primary-container": "#6e6e00"
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+            borderWidth: {
+              "border-width": "4px",
+            },
+            spacing: {
+              "shadow-offset": "6px",
+              "gutter": "24px",
+              "margin-desktop": "48px",
+              "base": "8px",
+              "margin-mobile": "16px",
+              "border-width": "4px"
+            },
+            fontFamily: {
+              "display-lg": ["Montserrat", "sans-serif"],
+              "body-lg": ["Geist", "system-ui", "sans-serif"],
+              "headline-sm": ["Montserrat", "sans-serif"],
+              "headline-md": ["Montserrat", "sans-serif"],
+              "body-md": ["Geist", "system-ui", "sans-serif"],
+              "label-mono": ["Space Mono", "monospace"],
+              "display-lg-mobile": ["Montserrat", "sans-serif"]
+            },
+            fontSize: {
+              "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "900"}],
+              "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "500"}],
+              "headline-sm": ["24px", {"lineHeight": "1.2", "fontWeight": "800"}],
+              "headline-md": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+              "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+              "label-mono": ["14px", {"lineHeight": "1", "fontWeight": "700"}],
+              "display-lg-mobile": ["36px", {"lineHeight": "1.1", "fontWeight": "900"}]
+            }
+          }
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
