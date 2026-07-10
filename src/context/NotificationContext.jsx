@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api";
+import echo from "../services/echo";
 
 const NotificationContext = createContext();
 
@@ -23,6 +24,7 @@ export function NotificationProvider({ children }) {
     return () => clearInterval(checkToken);
   }, [token]);
 
+  // Muat daftar notifikasi awal (belum dibaca) melalui API REST
   useEffect(() => {
     if (!token) {
       setNotifications([]);
@@ -30,97 +32,51 @@ export function NotificationProvider({ children }) {
       return;
     }
 
-    const apiBase = api.defaults.baseURL || "https://smarttask-api.jfaith.tech/api";
-
-    // Gunakan parser URL bawaan browser agar mendukung URL relatif & absolut secara sempurna
-    let streamUrl;
-    try {
-      const url = apiBase.startsWith("http")
-        ? new URL(apiBase)
-        : new URL(apiBase, window.location.origin);
-
-      if (url.port === "8000") {
-        // Pada Windows local development, karena php artisan serve bersifat single-threaded
-        // dan PHP_CLI_SERVER_WORKERS tidak didukung di Windows (karena tidak ada fork()),
-        // kita pisahkan port untuk tiap role agar tidak saling mengunci saat diuji bersamaan:
-        // - Developer: port 8001
-        // - Manager: port 8002
-        // - Admin/Lainnya: port 8003
-        const userStr = localStorage.getItem("user");
-        const user = userStr ? JSON.parse(userStr) : null;
-        if (user?.role === "developer") {
-          url.port = "8001";
-        } else if (user?.role === "manager") {
-          url.port = "8002";
-        } else {
-          url.port = "8003";
-        }
-      }
-
-      // Alihkan hostname agar cocok dengan browser window (localhost vs 127.0.0.1)
-      // Ini sangat penting di Windows untuk menghindari delay/kegagalan resolusi DNS localhost (IPv6 vs IPv4)
-      const currentHost = window.location.hostname;
-      if (
-        (url.hostname === "localhost" || url.hostname === "127.0.0.1") &&
-        currentHost
-      ) {
-        url.hostname = currentHost;
-      }
-
-      // Gabungkan path /notifications/stream dan hapus kemungkinan double slashes
-      const cleanPath = `${url.pathname}/notifications/stream`.replace(
-        /\/+/g,
-        "/",
-      );
-      streamUrl = `${url.origin}${cleanPath}?token=${token}`;
-    } catch (e) {
-      console.error("Gagal melakukan parsing API Base URL:", e);
-      const fallbackHost = window.location.hostname || "127.0.0.1";
-      streamUrl = `http://${fallbackHost}:8001/api/notifications/stream?token=${token}`;
-    }
-
-    // Buat EventSource dengan menyertakan token di URL
-    const eventSource = new EventSource(streamUrl);
-
-    eventSource.onmessage = (event) => {
-      // Hiraukan data keepalive kosong
-      if (event.data.trim() === ": keepalive" || !event.data) return;
-
+    const fetchInitialNotifications = async () => {
       try {
-        const newNotifications = JSON.parse(event.data);
-        if (Array.isArray(newNotifications) && newNotifications.length > 0) {
-          setNotifications((prev) => {
-            // Saring agar tidak ada ID ganda yang masuk ke state
-            const existingIds = new Set(prev.map((n) => n.id));
-            const uniqueNew = newNotifications.filter(
-              (n) => !existingIds.has(n.id),
-            );
-            return [...uniqueNew, ...prev];
-          });
-
-          setUnreadCount((prev) => prev + newNotifications.length);
-
-          // Tampilkan Toast untuk notifikasi terbaru
-          const latest = newNotifications[newNotifications.length - 1];
-          setActiveToast(latest);
-
-          // Hilangkan toast setelah 5 detik
-          setTimeout(() => setActiveToast(null), 5000);
-        }
+        const response = await api.get("/notifications");
+        const list = response.data.data || [];
+        setNotifications(list);
+        setUnreadCount(list.length);
       } catch (err) {
-        console.error("Gagal mendecode data SSE:", err);
+        console.error("Gagal memuat notifikasi awal:", err);
       }
     };
 
-    eventSource.onerror = (err) => {
-      console.error(
-        "SSE Connection Error (browser akan mencoba menyambung ulang otomatis):",
-        err,
-      );
-    };
+    fetchInitialNotifications();
+  }, [token]);
+
+  // Berlangganan ke channel privat user via Laravel Reverb (Echo) untuk update realtime
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    const user = userStr ? JSON.parse(userStr) : null;
+
+    if (!token || !user?.id) return;
+
+    console.log(`[Reverb] Berlangganan ke Private Channel: App.Models.User.${user.id}`);
+    
+    const channel = echo.private(`App.Models.User.${user.id}`)
+      .listen(".NotificationSent", (e) => {
+        console.log("[Reverb] Menerima Notifikasi Baru:", e.notification);
+        const newNotif = e.notification;
+
+        setNotifications((prev) => {
+          // Saring agar tidak ada ID ganda
+          if (prev.some((n) => n.id === newNotif.id)) return prev;
+          return [newNotif, ...prev];
+        });
+        setUnreadCount((prev) => prev + 1);
+
+        // Tampilkan Toast untuk notifikasi terbaru
+        setActiveToast(newNotif);
+
+        // Hilangkan toast setelah 5 detik
+        setTimeout(() => setActiveToast(null), 5000);
+      });
 
     return () => {
-      eventSource.close();
+      console.log(`[Reverb] Keluar dari Private Channel: App.Models.User.${user.id}`);
+      echo.leaveChannel(`App.Models.User.${user.id}`);
     };
   }, [token]);
 

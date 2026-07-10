@@ -156,10 +156,19 @@ export default function Task() {
   // Bug lama: setiap perubahan state notifications (termasuk markAsRead) memicu re-fetch
   // yang menyebabkan flicker/kedip saat notifikasi diklik.
   const prevNotifLengthRef = useRef(0);
+  const isFirstNotifLoadRef = useRef(true);
+
   useEffect(() => {
     const currentLength = notifications.length;
+    
+    if (isFirstNotifLoadRef.current) {
+      isFirstNotifLoadRef.current = false;
+      prevNotifLengthRef.current = currentLength;
+      return;
+    }
+
     if (currentLength > prevNotifLengthRef.current && selectedProject?.id) {
-      // Array bertambah = notifikasi baru dari SSE → refresh board
+      // Array bertambah = notifikasi baru → refresh board
       const latestNotif = notifications[0];
       if (latestNotif?.task_id) {
         fetchTasksByProject();
