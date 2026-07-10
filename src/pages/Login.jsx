@@ -201,8 +201,9 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => {
-                  window.location.href =
-                    "https://smarttask-api.jfaith.tech/auth/google/redirect";
+                  const apiBaseURL = api.defaults.baseURL;
+                  const hostURL = apiBaseURL.replace(/\/api$/, "");
+                  window.location.href = `${hostURL}/auth/google/redirect`;
                 }}
                 className="bg-white border-2 border-black p-3 flex items-center justify-center gap-2 hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
               >
@@ -236,8 +237,9 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => {
-                  window.location.href =
-                    "https://smarttask-api.jfaith.tech/auth/github/redirect";
+                  const apiBaseURL = api.defaults.baseURL;
+                  const hostURL = apiBaseURL.replace(/\/api$/, "");
+                  window.location.href = `${hostURL}/auth/github/redirect`;
                 }}
                 className="bg-white border-2 border-black p-3 flex items-center justify-center gap-2 hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
               >
