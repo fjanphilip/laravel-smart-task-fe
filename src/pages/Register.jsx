@@ -67,7 +67,7 @@ export default function Register() {
               src="/logo.png"
             />
             <h1 className="font-headline-md text-headline-md mt-4 text-on-background uppercase tracking-tight">
-              Join SmartTask
+              Join Smart Task
             </h1>
             <p className="font-body-md text-on-surface-variant font-bold">
               Start managing your chaos with precision.
@@ -88,7 +88,9 @@ export default function Register() {
               {/* Success Message */}
               {success && (
                 <div className="flex items-center gap-2 p-4 border-2 border-black bg-green-100 text-green-700 font-bold mb-4">
-                  <span className="material-symbols-outlined">check_circle</span>
+                  <span className="material-symbols-outlined">
+                    check_circle
+                  </span>
                   <span className="font-label-mono text-sm">{success}</span>
                 </div>
               )}
