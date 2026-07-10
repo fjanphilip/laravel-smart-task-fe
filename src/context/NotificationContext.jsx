@@ -30,7 +30,7 @@ export function NotificationProvider({ children }) {
       return;
     }
 
-    const apiBase = api.defaults.baseURL || "http://localhost:8000/api";
+    const apiBase = api.defaults.baseURL || "https://smarttask-api.jfaith.tech/api";
 
     // Gunakan parser URL bawaan browser agar mendukung URL relatif & absolut secara sempurna
     let streamUrl;
