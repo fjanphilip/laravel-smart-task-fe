@@ -425,7 +425,7 @@ export default function Task() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="ml-64 flex-grow min-h-screen flex flex-col relative min-w-0">
+      <main className="ml-0 md:ml-16 lg:ml-64 flex-grow min-h-screen flex flex-col relative min-w-0 transition-all duration-300">
         {/* Top Navbar */}
         <Header />
 
@@ -451,9 +451,9 @@ export default function Task() {
               <div className="relative inline-block">
                 <div
                   onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-                  className="flex items-center gap-4 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-6 py-3 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer select-none max-w-full md:max-w-2xl"
+                  className="flex items-center gap-3 md:gap-4 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 md:px-6 py-3 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer select-none w-full lg:max-w-2xl"
                 >
-                  <h2 className="font-display-lg text-display-lg-mobile md:text-headline-md tracking-tighter text-black uppercase font-black truncate">
+                  <h2 className="font-display-lg text-base md:text-display-lg-mobile lg:text-headline-md tracking-tighter text-black uppercase font-black truncate">
                     Project: {activeProjectName}
                   </h2>
                   <span
@@ -467,7 +467,7 @@ export default function Task() {
 
                 {/* Dropdown Menu */}
                 {isSwitcherOpen && (
-                  <div className="absolute left-0 mt-3 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full max-w-md py-2 flex flex-col z-30">
+                  <div className="absolute left-0 mt-3 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full min-w-full md:max-w-md py-2 flex flex-col z-30">
                     {projects.length === 0 ? (
                       <span className="p-4 font-label-mono text-sm text-on-surface-variant">
                         No other projects found
@@ -512,7 +512,7 @@ export default function Task() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter mb-12 relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-gutter mb-8 md:mb-12 relative z-10">
             {stats.map((stat, i) => (
               <div
                 key={i}

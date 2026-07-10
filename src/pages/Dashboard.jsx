@@ -198,12 +198,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="bg-background min-h-screen text-on-background w-full flex overflow-x-hidden">
+    <div className="bg-background min-h-screen text-on-background w-full flex overflow-x-hidden" onClick={() => { /* close sidebar on content click on mobile */ }}>
       {/* Sidebar Navigation */}
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="ml-64 flex-grow min-h-screen flex flex-col relative min-w-0">
+      <main className="ml-0 md:ml-16 lg:ml-64 flex-grow min-h-screen flex flex-col relative min-w-0 transition-all duration-300">
         {/* Top Navbar */}
         <Header />
 
@@ -232,7 +232,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-gutter relative z-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-gutter relative z-10">
             {stats.map((stat, index) => (
               <div
                 key={index}
@@ -249,7 +249,7 @@ export default function Dashboard() {
           </div>
 
           {/* Projects Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 pb-20 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-10 pb-20 relative z-10">
             {projects.map((project) => {
               // 🔴 PERBAIKAN 3: Fallback data jika backend tidak memiliki properti styling/tags tertentu
               const tags = project.tags || ["Development", "Laravel"];

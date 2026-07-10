@@ -64,7 +64,7 @@ export default function Register() {
             <img
               alt="SmartTask Logo"
               className="h-16 mb-base"
-              src="https://lh3.googleusercontent.com/aida/AP1WRLtOoprpFUlVHpb87FHD6teoSknZaYe0sKu7P74mk9UJehXcypELfMCtEkHaagurtPpg2jjftQc0KLZMTaZrGuAZ3p7mSwQOV5cl-_MyiR45s9v_glSADmsqk_GMTX41gcTmqSQGAMLPnAOrTWNv_ZFkcjCWsq8l-eLEDEzV87g5GvJX-9a_81R1o-sEQ77UCwCtwJ7P4btK1MbQJsMA6Je6vnKtJxmgzz0w2an1oWDLbMcaNpFW7nw8EmM"
+              src="/logo.png"
             />
             <h1 className="font-headline-md text-headline-md mt-4 text-on-background uppercase tracking-tight">
               Join SmartTask

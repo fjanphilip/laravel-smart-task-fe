@@ -109,3 +109,32 @@ body,
     position: relative;
     z-index: 20;
 }
+
+/* ============================================================
+   Responsive Utilities
+============================================================ */
+
+/* Prevent body scroll when mobile sidebar overlay is open */
+body.sidebar-open {
+    overflow: hidden;
+}
+
+/* Smooth sidebar transition */
+aside {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Better touch targets on mobile */
+@media (max-width: 767px) {
+    button, a {
+        min-height: 40px;
+    }
+
+    /* Make modals full-width with bottom sheet feel on mobile */
+    [role="dialog"] {
+        margin: 0 !important;
+        border-radius: 0 !important;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+}

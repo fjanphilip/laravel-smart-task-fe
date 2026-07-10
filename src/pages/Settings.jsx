@@ -148,7 +148,7 @@ export default function Settings() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="ml-64 flex-grow min-h-screen flex flex-col relative min-w-0">
+      <main className="ml-0 md:ml-16 lg:ml-64 flex-grow min-h-screen flex flex-col relative min-w-0 transition-all duration-300">
         {/* Top Navbar */}
         <Header />
 
@@ -174,7 +174,7 @@ export default function Settings() {
           {isAdmin ? (
             <>
               {/* Quick Stats Bento Section */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter relative z-10">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-gutter relative z-10">
                 {/* Total Active Users */}
                 <div className="bg-tertiary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
                   <p className="font-label-mono text-on-tertiary-container mb-2 uppercase">Total Active Users</p>
@@ -199,8 +199,8 @@ export default function Settings() {
 
               {/* User List Section */}
               <div className="bg-surface border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative z-10">
-                {/* Table Header */}
-                <div className="grid grid-cols-12 border-b-4 border-black bg-surface-container-high p-4 font-label-mono uppercase tracking-widest text-on-surface-variant font-bold text-sm">
+                {/* Table Header — hidden on mobile, visible on md+ */}
+                <div className="hidden md:grid grid-cols-12 border-b-4 border-black bg-surface-container-high p-4 font-label-mono uppercase tracking-widest text-on-surface-variant font-bold text-sm">
                   <div className="col-span-4">User Profile</div>
                   <div className="col-span-4">Email Address</div>
                   <div className="col-span-2">Role</div>
@@ -228,29 +228,54 @@ export default function Settings() {
                     const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
 
                     return (
-                      <div key={user.id} className="grid grid-cols-12 items-center p-6 border-b-4 border-black hover:bg-surface-container transition-colors group">
-                        <div className="col-span-4 flex items-center gap-4">
-                          <div className="w-12 h-12 border-2 border-black bg-primary-fixed flex items-center justify-center font-display-lg text-lg font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
-                            {initial}
+                      <div key={user.id} className="border-b-4 border-black hover:bg-surface-container transition-colors group">
+                        {/* Mobile card layout */}
+                        <div className="md:hidden p-4 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 border-2 border-black bg-primary-fixed flex items-center justify-center font-display-lg text-sm font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                              {initial}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-body-lg text-sm font-bold text-black truncate">{user.name}</p>
+                              <p className="font-label-mono text-xs text-gray-500 truncate">{user.email}</p>
+                              <span className={`${roleColor} mt-1 inline-block px-2 py-0.5 border-2 border-black font-label-mono text-[10px] uppercase`}>
+                                {user.role || "Member"}
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-body-lg text-md font-bold text-black">{user.name}</p>
-                            <p className="font-label-mono text-xs opacity-60">ID: TM-{user.id}</p>
-                          </div>
-                        </div>
-                        <div className="col-span-4 font-label-mono text-sm text-black">{user.email}</div>
-                        <div className="col-span-2">
-                          <span className={`${roleColor} px-3 py-1 border-2 border-black font-label-mono text-xs uppercase`}>
-                            {user.role || "Member"}
-                          </span>
-                        </div>
-                        <div className="col-span-2 text-right">
                           <button
                             onClick={() => handleOpenUpdateModal(user)}
-                            className="p-2 hover:bg-primary-container border-2 border-transparent hover:border-black transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                            className="p-2 hover:bg-primary-container border-2 border-transparent hover:border-black transition-all active:translate-x-0.5 active:translate-y-0.5 shrink-0"
                           >
                             <span className="material-symbols-outlined text-black font-bold">more_vert</span>
                           </button>
+                        </div>
+
+                        {/* Desktop table row layout */}
+                        <div className="hidden md:grid grid-cols-12 items-center p-6">
+                          <div className="col-span-4 flex items-center gap-4">
+                            <div className="w-12 h-12 border-2 border-black bg-primary-fixed flex items-center justify-center font-display-lg text-lg font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                              {initial}
+                            </div>
+                            <div>
+                              <p className="font-body-lg text-md font-bold text-black">{user.name}</p>
+                              <p className="font-label-mono text-xs opacity-60">ID: TM-{user.id}</p>
+                            </div>
+                          </div>
+                          <div className="col-span-4 font-label-mono text-sm text-black">{user.email}</div>
+                          <div className="col-span-2">
+                            <span className={`${roleColor} px-3 py-1 border-2 border-black font-label-mono text-xs uppercase`}>
+                              {user.role || "Member"}
+                            </span>
+                          </div>
+                          <div className="col-span-2 text-right">
+                            <button
+                              onClick={() => handleOpenUpdateModal(user)}
+                              className="p-2 hover:bg-primary-container border-2 border-transparent hover:border-black transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                            >
+                              <span className="material-symbols-outlined text-black font-bold">more_vert</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
