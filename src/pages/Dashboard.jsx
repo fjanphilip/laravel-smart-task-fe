@@ -225,7 +225,7 @@ export default function Dashboard() {
             {/* 🔴 ANIMASI TEKAN (active:) PADA CREATE PROJECT BUTTON */}
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-[#FF00FF] text-white font-display-lg text-headline-sm px-8 py-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase italic font-black"
+              className="w-full md:w-auto bg-[#FF00FF] text-white font-display-lg text-headline-sm px-8 py-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase italic font-black"
             >
               Create Project
             </button>
@@ -236,12 +236,12 @@ export default function Dashboard() {
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className={`${stat.bg} border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`}
+                className={`${stat.bg} border-4 border-black p-3 sm:p-4 md:p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`}
               >
-                <p className="font-label-mono uppercase text-sm mb-2 opacity-80">
+                <p className="font-label-mono uppercase text-[9px] sm:text-xs md:text-sm mb-2 opacity-80 truncate" title={stat.title}>
                   {stat.title}
                 </p>
-                <p className="font-display-lg text-headline-md font-black">
+                <p className="font-display-lg text-xl sm:text-2xl md:text-headline-md font-black">
                   {stat.value}
                 </p>
               </div>

@@ -457,10 +457,10 @@ export default function Task() {
               </div>
 
               {/* Dynamic Project Switcher Dropdown */}
-              <div className="relative inline-block">
+              <div className="relative w-full md:w-auto md:inline-block">
                 <div
                   onClick={() => setIsSwitcherOpen(!isSwitcherOpen)}
-                  className="flex items-center gap-3 md:gap-4 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 md:px-6 py-3 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer select-none w-full lg:max-w-2xl"
+                  className="flex items-center justify-between gap-3 md:gap-4 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 md:px-6 py-3 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer select-none w-full lg:max-w-2xl"
                 >
                   <h2 className="font-display-lg text-base md:text-display-lg-mobile lg:text-headline-md tracking-tighter text-black uppercase font-black truncate">
                     Project: {activeProjectName}
@@ -476,33 +476,39 @@ export default function Task() {
 
                 {/* Dropdown Menu */}
                 {isSwitcherOpen && (
-                  <div className="absolute left-0 mt-3 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full min-w-full md:max-w-md py-2 flex flex-col z-30">
-                    {projects.length === 0 ? (
-                      <span className="p-4 font-label-mono text-sm text-on-surface-variant">
-                        No other projects found
-                      </span>
-                    ) : (
-                      projects.map((proj) => {
-                        const isCurrent = proj.id === selectedProject?.id;
-                        return (
-                          <button
-                            key={proj.id}
-                            onClick={() => {
-                              setSelectedProject(proj);
-                              setIsSwitcherOpen(false);
-                            }}
-                            className={`px-6 py-3 text-left font-display-lg text-md uppercase font-bold hover:bg-primary-container hover:text-black transition-colors ${
-                              isCurrent
-                                ? "bg-surface-container-high text-black"
-                                : "text-on-background"
-                            }`}
-                          >
-                            {proj.name}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
+                  <>
+                    <div
+                      className="fixed inset-0 z-20 cursor-default"
+                      onClick={() => setIsSwitcherOpen(false)}
+                    />
+                    <div className="absolute left-0 mt-3 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full min-w-full md:max-w-md py-2 flex flex-col z-30">
+                      {projects.length === 0 ? (
+                        <span className="p-4 font-label-mono text-sm text-on-surface-variant">
+                          No other projects found
+                        </span>
+                      ) : (
+                        projects.map((proj) => {
+                          const isCurrent = proj.id === selectedProject?.id;
+                          return (
+                            <button
+                              key={proj.id}
+                              onClick={() => {
+                                setSelectedProject(proj);
+                                setIsSwitcherOpen(false);
+                              }}
+                              className={`px-6 py-3 text-left font-display-lg text-md uppercase font-bold hover:bg-primary-container hover:text-black transition-colors ${
+                                isCurrent
+                                  ? "bg-surface-container-high text-black"
+                                  : "text-on-background"
+                              }`}
+                            >
+                              {proj.name}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -525,12 +531,12 @@ export default function Task() {
             {stats.map((stat, i) => (
               <div
                 key={i}
-                className={`${stat.bg} border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col justify-between`}
+                className={`${stat.bg} border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 md:p-6 flex flex-col justify-between`}
               >
-                <p className="font-label-mono text-outline uppercase text-xs mb-4">
+                <p className="font-label-mono text-outline uppercase text-[9px] sm:text-xs md:text-sm mb-4 truncate" title={stat.title}>
                   {stat.title}
                 </p>
-                <h3 className="font-display-lg text-4xl font-black">
+                <h3 className="font-display-lg text-xl sm:text-2xl md:text-4xl font-black">
                   {stat.value}
                 </h3>
               </div>
@@ -583,7 +589,7 @@ export default function Task() {
                       }`}
                     >
                       <div className="flex justify-between items-start mb-4">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <span
                             className={`${task.statusClass} border-2 border-black px-2 py-0.5 text-xs font-label-mono font-bold uppercase`}
                           >

@@ -197,7 +197,7 @@ export default function Login() {
 
           {/* Social Logins */}
           <div className="p-gutter bg-surface-container-low border-t-border-width border-black">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => {

@@ -76,68 +76,83 @@ export default function Header() {
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-4 w-80 sm:w-96 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-black z-50 flex flex-col max-h-[400px] md:max-h-[450px] overflow-hidden">
-              {/* Dropdown Header */}
-              <header className="p-4 border-b-4 border-black bg-primary-container flex justify-between items-center shrink-0">
-                <h4 className="font-display-lg text-sm font-black uppercase text-black">
-                  Notifications
-                </h4>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={() => {
-                      markAllAsRead();
-                      setIsDropdownOpen(false);
-                    }}
-                    className="text-xs font-bold font-label-mono text-black hover:underline uppercase"
-                  >
-                    Mark all read
-                  </button>
-                )}
-              </header>
+            <>
+              {/* Mobile: Full-screen overlay backdrop */}
+              <div
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 sm:hidden animate-in fade-in duration-200"
+                onClick={() => setIsDropdownOpen(false)}
+              />
 
-              {/* Dropdown Content */}
-              <div className="overflow-y-auto flex-grow divide-y-4 divide-black">
-                {notifications.length === 0 ? (
-                  <div className="p-6 text-center font-label-mono text-xs text-gray-500">
-                    No notifications yet.
-                  </div>
-                ) : (
-                  notifications.map((notif) => (
-                    <div
-                      key={notif.id}
+              {/* Dropdown Container */}
+              <div className="fixed inset-x-4 top-20 bottom-4 sm:absolute sm:inset-auto sm:right-0 sm:top-auto sm:bottom-auto sm:mt-4 w-auto sm:w-96 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-black z-50 flex flex-col max-h-[calc(100vh-100px)] sm:max-h-[450px] overflow-hidden animate-in zoom-in-95 slide-in-from-top-2 sm:slide-in-from-top-0 duration-200">
+                {/* Dropdown Header */}
+                <header className="p-4 border-b-4 border-black bg-primary-container flex justify-between items-center shrink-0">
+                  <h4 className="font-display-lg text-sm font-black uppercase text-black">
+                    Notifications
+                  </h4>
+                  {unreadCount > 0 && (
+                    <button
                       onClick={() => {
-                        if (!notif.is_read) markAsRead(notif.id);
-                        handleNotificationClick(notif);
+                        markAllAsRead();
+                        setIsDropdownOpen(false);
                       }}
-                      className={`p-4 text-left transition-colors cursor-pointer flex flex-col gap-1 ${
-                        notif.is_read
-                          ? "bg-white hover:bg-gray-50"
-                          : "bg-tertiary-container/30 hover:bg-tertiary-container/40"
-                      }`}
+                      className="text-xs font-bold font-label-mono text-black hover:underline uppercase"
                     >
-                      <div className="flex justify-between items-start">
-                        <span className="font-display-lg text-xs font-black uppercase tracking-wider text-black">
-                          {notif.title}
-                        </span>
-                        {!notif.is_read && (
-                          <span className="w-2.5 h-2.5 bg-secondary border-2 border-black rounded-full shrink-0"></span>
-                        )}
-                      </div>
-                      <p className="font-label-mono text-xs text-gray-800 leading-relaxed">
-                        {notif.message}
-                      </p>
-                      <span className="font-label-mono text-[9px] text-gray-500 mt-1">
-                        {new Date(notif.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        - {new Date(notif.created_at).toLocaleDateString()}
-                      </span>
+                      Mark all read
+                    </button>
+                  )}
+                </header>
+
+                {/* Dropdown Content */}
+                <div className="overflow-y-auto flex-grow divide-y-4 divide-black">
+                  {notifications.length === 0 ? (
+                    <div className="p-6 text-center font-label-mono text-xs text-gray-500">
+                      No notifications yet.
                     </div>
-                  ))
-                )}
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif.id}
+                        onClick={() => {
+                          if (!notif.is_read) markAsRead(notif.id);
+                          handleNotificationClick(notif);
+                        }}
+                        className={`p-4 text-left transition-colors cursor-pointer flex flex-col gap-1 ${
+                          notif.is_read
+                            ? "bg-white hover:bg-gray-50"
+                            : "bg-tertiary-container/30 hover:bg-tertiary-container/40"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <span className="font-display-lg text-xs font-black uppercase tracking-wider text-black">
+                            {notif.title}
+                          </span>
+                          {!notif.is_read && (
+                            <span className="w-2.5 h-2.5 bg-secondary border-2 border-black rounded-full shrink-0"></span>
+                          )}
+                        </div>
+                        <p className="font-label-mono text-xs text-gray-800 leading-relaxed">
+                          {notif.message}
+                        </p>
+                        {notif.task_id && (
+                          <div className="mt-1 inline-flex items-center gap-1 text-[9px] font-bold font-label-mono text-secondary uppercase hover:underline">
+                            <span>Detail Task</span>
+                            <span className="material-symbols-outlined text-[10px] font-black">arrow_forward</span>
+                          </div>
+                        )}
+                        <span className="font-label-mono text-[9px] text-gray-500 mt-1">
+                          {new Date(notif.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          - {new Date(notif.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
 

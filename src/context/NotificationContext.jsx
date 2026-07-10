@@ -117,7 +117,7 @@ export function NotificationProvider({ children }) {
 
       {/* Toast Neo-Brutalism Real-Time Alert */}
       {activeToast && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full bg-secondary border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-white flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 z-50 max-w-sm bg-secondary border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-white flex flex-col gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
           <div className="flex justify-between items-start">
             <h4 className="font-display-lg text-sm font-black uppercase tracking-wider text-white">
               🔔 {activeToast.title}

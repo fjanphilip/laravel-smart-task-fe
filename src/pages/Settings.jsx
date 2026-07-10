@@ -174,25 +174,25 @@ export default function Settings() {
           {isAdmin ? (
             <>
               {/* Quick Stats Bento Section */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-gutter relative z-10">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-gutter relative z-10">
                 {/* Total Active Users */}
-                <div className="bg-tertiary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
-                  <p className="font-label-mono text-on-tertiary-container mb-2 uppercase">Total Active Users</p>
-                  <p className="font-display-lg text-4xl font-black">{users.length}</p>
+                <div className="bg-tertiary-container border-4 border-black p-4 sm:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
+                  <p className="font-label-mono text-on-tertiary-container mb-2 uppercase text-xs sm:text-sm">Total Active Users</p>
+                  <p className="font-display-lg text-3xl sm:text-4xl font-black">{users.length}</p>
                   <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="person">person</span>
                 </div>
 
                 {/* Pending Role Update */}
-                <div className="bg-primary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
-                  <p className="font-label-mono text-on-primary-container mb-2 uppercase">Pending Role Update</p>
-                  <p className="font-display-lg text-4xl font-black">02</p>
+                <div className="bg-primary-container border-4 border-black p-4 sm:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
+                  <p className="font-label-mono text-on-primary-container mb-2 uppercase text-xs sm:text-sm">Pending Role Update</p>
+                  <p className="font-display-lg text-3xl sm:text-4xl font-black">02</p>
                   <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="mail">mail</span>
                 </div>
 
                 {/* Security Alerts */}
-                <div className="bg-secondary-fixed border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
-                  <p className="font-label-mono text-on-secondary-container mb-2 uppercase">Security Alerts</p>
-                  <p className="font-display-lg text-4xl font-black text-error">00</p>
+                <div className="bg-secondary-fixed border-4 border-black p-4 sm:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
+                  <p className="font-label-mono text-on-secondary-container mb-2 uppercase text-xs sm:text-sm">Security Alerts</p>
+                  <p className="font-display-lg text-3xl sm:text-4xl font-black text-error">00</p>
                   <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="security">security</span>
                 </div>
               </div>
@@ -461,7 +461,7 @@ export default function Settings() {
                 <label className="font-label-mono uppercase text-sm text-on-surface">
                   Role
                 </label>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Admin */}
                   <label className={`relative flex items-center gap-3 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:bg-surface-container transition-all ${
                     updateUserRole === "admin"
