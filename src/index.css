@@ -59,3 +59,53 @@ body,
 .animate-shake {
     animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+/* ============================================================
+   Task Card Highlight — Fade-in Berwarna
+   Dipicu saat user klik notifikasi → scroll ke task ini.
+   4 Fase:
+     0%   → Card masih di warna asli (transparan overlay)
+     20%  → Warna kuning neon FADE IN dengan smooth
+     55%  → Tahan kuning agar user melihat jelas
+     100% → Fade kembali ke warna asli
+============================================================ */
+@keyframes task-highlight-fade-in {
+    /* Fase 1: Titik awal — card warna aslinya */
+    0% {
+        background-color: #ffffff !important;
+        transform: scale(1);
+        box-shadow: 6px 6px 0px 0px rgba(0,0,0,1) !important;
+        outline: none;
+    }
+    /* Fase 2: Fade IN ke kuning — warna masuk perlahan */
+    20% {
+        background-color: #f4f428 !important;
+        transform: scale(1.04);
+        box-shadow:
+            0 0 0 6px rgba(244, 244, 40, 0.5),
+            10px 10px 0px 0px rgba(0,0,0,1) !important;
+        outline: 3px solid #000;
+    }
+    /* Fase 3: Tahan di kuning — user melihat dengan jelas */
+    55% {
+        background-color: #f4f428 !important;
+        transform: scale(1.04);
+        box-shadow:
+            0 0 0 5px rgba(244, 244, 40, 0.35),
+            10px 10px 0px 0px rgba(0,0,0,1) !important;
+        outline: 3px solid #000;
+    }
+    /* Fase 4: Fade OUT kembali ke normal */
+    100% {
+        background-color: #ffffff !important;
+        transform: scale(1);
+        box-shadow: 6px 6px 0px 0px rgba(0,0,0,1) !important;
+        outline: none;
+    }
+}
+
+.task-highlight-flash {
+    animation: task-highlight-fade-in 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    position: relative;
+    z-index: 20;
+}

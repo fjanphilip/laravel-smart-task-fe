@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import api from "../services/api";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function Task() {
   const location = useLocation();
+  const { notifications } = useNotifications();
+
+  const loggedInUserString = localStorage.getItem("user");
+  const currentUser = loggedInUserString
+    ? JSON.parse(loggedInUserString)
+    : null;
+  const isMember = currentUser?.role === "member";
+  const isAdmin = currentUser?.role === "admin";
+  const isManager = currentUser?.role === "manager";
+  const isDeveloper = currentUser?.role === "developer";
 
   // 🔴 1. DEKLARASI SEMUA STATE DI PALING ATAS
   const [projects, setProjects] = useState([]);
@@ -15,6 +26,7 @@ export default function Task() {
   const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(false);
+  const [pendingHighlightTaskId, setPendingHighlightTaskId] = useState(null);
 
   // Create Task Modal States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -138,6 +150,107 @@ export default function Task() {
       fetchTasksByProject();
     }
   }, [selectedProject?.id]);
+
+  // Auto-refresh task board HANYA ketika notifikasi BARU masuk (bukan saat is_read berubah)
+  // Menggunakan useRef untuk melacak panjang array sebelumnya.
+  // Bug lama: setiap perubahan state notifications (termasuk markAsRead) memicu re-fetch
+  // yang menyebabkan flicker/kedip saat notifikasi diklik.
+  const prevNotifLengthRef = useRef(0);
+  useEffect(() => {
+    const currentLength = notifications.length;
+    if (currentLength > prevNotifLengthRef.current && selectedProject?.id) {
+      // Array bertambah = notifikasi baru dari SSE → refresh board
+      const latestNotif = notifications[0];
+      if (latestNotif?.task_id) {
+        fetchTasksByProject();
+      }
+    }
+    // Selalu update ref ke panjang terkini
+    prevNotifLengthRef.current = currentLength;
+  }, [notifications, selectedProject?.id]);
+
+  // ✅ Scroll dan highlight elemen task berdasarkan ID
+  const scrollToAndHighlightTask = (taskId) => {
+    const element = document.getElementById(`task-${taskId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Hapus class dulu (jika animasi sebelumnya masih berjalan) agar restart
+      element.classList.remove("task-highlight-flash");
+      // Delay satu frame agar browser sempat menghapus class sebelum menambahkan kembali
+      requestAnimationFrame(() => {
+        element.classList.add("task-highlight-flash");
+        setTimeout(() => {
+          element.classList.remove("task-highlight-flash");
+        }, 3600); // sesuai durasi animasi CSS: 3.5s + buffer 100ms
+      });
+    } else {
+      console.warn(`[Highlight] Elemen task-${taskId} tidak ditemukan di DOM.`);
+    }
+  };
+
+  // ✅ EFEK 1: Jalankan scroll+highlight setelah data task selesai dimuat
+  // Ini adalah solusi race condition: kita tidak pakai setTimeout arbitrary,
+  // melainkan menunggu `loadingTasks` benar-benar menjadi false.
+  useEffect(() => {
+    if (!pendingHighlightTaskId || loadingTasks) return;
+    // loadingTasks sudah false, DOM sudah ter-render — aman untuk scroll
+    const idToHighlight = pendingHighlightTaskId;
+    setPendingHighlightTaskId(null);
+    // Satu requestAnimationFrame untuk memastikan browser telah me-commit render terbaru
+    requestAnimationFrame(() => {
+      scrollToAndHighlightTask(idToHighlight);
+    });
+  }, [loadingTasks, pendingHighlightTaskId]);
+
+  // ✅ EFEK 2: Tangani Custom Event 'highlight-task' dari Header (saat sudah di halaman /tasks)
+  useEffect(() => {
+    const handleHighlight = (e) => {
+      const { taskId, projectId } = e.detail;
+      const numericProjectId = projectId ? parseInt(projectId, 10) : null;
+
+      if (numericProjectId && selectedProject?.id !== numericProjectId) {
+        // Task ada di project berbeda — ganti project dulu, lalu tunggu loading selesai
+        const matched = projects.find((p) => p.id === numericProjectId);
+        if (matched) {
+          setPendingHighlightTaskId(taskId);
+          setSelectedProject(matched);
+        }
+      } else {
+        // Project sudah sesuai — langsung scroll jika tasks sudah ada
+        if (!loadingTasks && tasks.length > 0) {
+          scrollToAndHighlightTask(taskId);
+        } else {
+          setPendingHighlightTaskId(taskId);
+        }
+      }
+    };
+
+    window.addEventListener("highlight-task", handleHighlight);
+    return () => window.removeEventListener("highlight-task", handleHighlight);
+  }, [selectedProject?.id, projects, tasks, loadingTasks]);
+
+  // ✅ EFEK 3: Tangani Navigation State dari halaman lain (react-router navigate + state)
+  useEffect(() => {
+    if (!location.state?.highlightTaskId || projects.length === 0) return;
+
+    const { highlightTaskId, projectId } = location.state;
+    const numericProjectId = projectId ? parseInt(projectId, 10) : null;
+
+    // Bersihkan state navigasi agar tidak diproses ulang saat re-render
+    window.history.replaceState({}, document.title);
+
+    if (numericProjectId && selectedProject?.id !== numericProjectId) {
+      // Task ada di project berbeda — set pending dan ganti project
+      const matched = projects.find((p) => p.id === numericProjectId);
+      if (matched) {
+        setPendingHighlightTaskId(highlightTaskId);
+        setSelectedProject(matched);
+      }
+    } else {
+      // Project sudah sesuai atau tidak ada projectId — set pending, tunggu loading
+      setPendingHighlightTaskId(highlightTaskId);
+    }
+  }, [location.state, projects]);
 
   // 🔴 4. VARIABEL DAN STATS DERIVATIF
   const activeProjectName = selectedProject?.name || "CostumeRent Platform";
@@ -385,12 +498,16 @@ export default function Task() {
               </div>
 
               {/* Settings Button */}
-              <div>
-                <button className="flex items-center gap-2 bg-surface border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all px-4 py-2 font-bold text-black">
-                  <span className="material-symbols-outlined">settings</span>
-                  Project Settings
-                </button>
-              </div>
+              {(isAdmin ||
+                (selectedProject &&
+                  selectedProject.user_id === currentUser?.id)) && (
+                <div>
+                  <button className="flex items-center gap-2 bg-surface border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:translate-x-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all px-4 py-2 font-bold text-black">
+                    <span className="material-symbols-outlined">settings</span>
+                    Project Settings
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -449,6 +566,7 @@ export default function Task() {
                   return (
                     <div
                       key={task.id}
+                      id={`task-${task.id}`}
                       className={`p-5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer group relative text-left ${
                         isBlocked
                           ? "bg-error-container border-4 border-error"
@@ -819,7 +937,7 @@ export default function Task() {
       {/* UPDATE TASK MODAL */}
       {isUpdateModalOpen &&
         (() => {
-          const isBlocked = updateStatus === "blocked";
+          const isBlocked = updateStatus === "blocked" && !isAdmin;
 
           // Cari prerequisite task title untuk info di warning blocked
           const prerequisiteTask = tasks.find(
@@ -898,7 +1016,9 @@ export default function Task() {
                       onChange={(e) => setUpdateTitle(e.target.value)}
                       placeholder="e.g. Design Login Flow"
                       required
-                      disabled={updatingTask || isBlocked}
+                      disabled={
+                        updatingTask || isBlocked || isMember || isDeveloper
+                      }
                       className="w-full border-4 border-black p-4 font-label-mono focus:bg-primary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black disabled:opacity-50"
                     />
                   </div>
@@ -917,7 +1037,9 @@ export default function Task() {
                       onChange={(e) => setUpdateDescription(e.target.value)}
                       placeholder="Describe the task details..."
                       rows="3"
-                      disabled={updatingTask || isBlocked}
+                      disabled={
+                        updatingTask || isBlocked || isMember || isDeveloper
+                      }
                       className="w-full border-4 border-black p-4 font-label-mono focus:bg-tertiary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black disabled:opacity-50"
                     ></textarea>
                   </div>
@@ -937,7 +1059,13 @@ export default function Task() {
                           id="update_task_status"
                           value={updateStatus}
                           onChange={(e) => setUpdateStatus(e.target.value)}
-                          disabled={updatingTask || isBlocked}
+                          disabled={
+                            updatingTask ||
+                            isBlocked ||
+                            (isMember &&
+                              parseInt(updateAssignedTo, 10) !==
+                                currentUser?.id)
+                          }
                           className="w-full border-4 border-black p-4 font-label-mono appearance-none focus:bg-secondary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black cursor-pointer pr-10 disabled:opacity-50"
                         >
                           {updateStatus === "blocked" && (
@@ -971,7 +1099,9 @@ export default function Task() {
                           id="update_task_priority"
                           value={updatePriority}
                           onChange={(e) => setUpdatePriority(e.target.value)}
-                          disabled={updatingTask || isBlocked}
+                          disabled={
+                            updatingTask || isBlocked || isMember || isDeveloper
+                          }
                           className="w-full border-4 border-black p-4 font-label-mono appearance-none focus:bg-secondary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black cursor-pointer pr-10 disabled:opacity-50"
                         >
                           <option value="low">Low</option>
@@ -1004,7 +1134,9 @@ export default function Task() {
                         value={updateDueDate}
                         onChange={(e) => setUpdateDueDate(e.target.value)}
                         required
-                        disabled={updatingTask || isBlocked}
+                        disabled={
+                          updatingTask || isBlocked || isMember || isDeveloper
+                        }
                         className="w-full border-4 border-black p-4 font-label-mono focus:bg-primary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black disabled:opacity-50"
                       />
                     </div>
@@ -1024,7 +1156,9 @@ export default function Task() {
                         onChange={(e) => setUpdateEstimateHours(e.target.value)}
                         placeholder="e.g. 6"
                         required
-                        disabled={updatingTask || isBlocked}
+                        disabled={
+                          updatingTask || isBlocked || isMember || isDeveloper
+                        }
                         min="1"
                         className="w-full border-4 border-black p-4 font-label-mono focus:bg-tertiary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black disabled:opacity-50"
                       />
@@ -1046,7 +1180,9 @@ export default function Task() {
                           id="update_task_assign"
                           value={updateAssignedTo}
                           onChange={(e) => setUpdateAssignedTo(e.target.value)}
-                          disabled={updatingTask || isBlocked}
+                          disabled={
+                            updatingTask || isBlocked || isMember || isDeveloper
+                          }
                           className="w-full border-4 border-black p-4 font-label-mono appearance-none focus:bg-primary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black cursor-pointer pr-10 disabled:opacity-50"
                         >
                           <option value="">Unassigned</option>
@@ -1079,7 +1215,9 @@ export default function Task() {
                           onChange={(e) =>
                             setUpdateDependsOnTaskId(e.target.value)
                           }
-                          disabled={updatingTask || isBlocked}
+                          disabled={
+                            updatingTask || isBlocked || isMember || isDeveloper
+                          }
                           className="w-full border-4 border-black p-4 font-label-mono appearance-none focus:bg-primary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black cursor-pointer pr-10 disabled:opacity-50"
                         >
                           <option value="">None</option>
@@ -1109,14 +1247,18 @@ export default function Task() {
                     >
                       {updatingTask ? "Updating..." : "Update Task"}
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleDeleteTask}
-                      disabled={updatingTask || isBlocked}
-                      className="flex-grow bg-error-container border-4 border-black p-4 font-display-lg text-error font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] btn-press uppercase tracking-widest disabled:opacity-50"
-                    >
-                      Delete Task
-                    </button>
+                    {(isAdmin ||
+                      (selectedProject &&
+                        selectedProject.user_id === currentUser?.id)) && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteTask}
+                        disabled={updatingTask || isBlocked}
+                        className="flex-grow bg-error-container border-4 border-black p-4 font-display-lg text-error font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] btn-press uppercase tracking-widest disabled:opacity-50"
+                      >
+                        Delete Task
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setIsUpdateModalOpen(false)}
@@ -1133,14 +1275,16 @@ export default function Task() {
         })()}
 
       {/* FAB for Global Add */}
-      <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="fixed bottom-10 right-10 w-20 h-20 bg-primary-container text-on-primary-container border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all group z-50 text-black animate-bounce"
-      >
-        <span className="material-symbols-outlined text-4xl group-hover:rotate-90 transition-transform font-bold">
-          add
-        </span>
-      </button>
+      {!isMember && (
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="fixed bottom-10 right-10 w-20 h-20 bg-primary-container text-on-primary-container border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all group z-50 text-black animate-bounce"
+        >
+          <span className="material-symbols-outlined text-4xl group-hover:rotate-90 transition-transform font-bold">
+            add
+          </span>
+        </button>
+      )}
     </div>
   );
 }

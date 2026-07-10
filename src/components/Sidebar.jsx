@@ -12,6 +12,11 @@ export default function Sidebar() {
     navigate("/login");
   };
 
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+  const isAdmin = user?.role === "admin";
+  const isMember = user?.role === "member";
+
   const navItems = [
     { name: "Dashboard", path: "/", icon: "dashboard" },
     { name: "Tasks", path: "/tasks", icon: "checklist" },
@@ -67,9 +72,11 @@ export default function Sidebar() {
         </nav>
 
         {/* Action Button */}
-        <button className="mt-auto bg-primary-container border-4 border-black font-bold p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] neo-press transition-all hover:-translate-y-0.5 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          New Task
-        </button>
+        {!isMember && (
+          <button className="mt-auto bg-primary-container border-4 border-black font-bold p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] neo-press transition-all hover:-translate-y-0.5 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            New Task
+          </button>
+        )}
       </div>
     </aside>
   );

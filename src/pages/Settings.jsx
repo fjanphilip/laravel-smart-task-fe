@@ -4,6 +4,10 @@ import Header from "../components/Header";
 import api from "../services/api";
 
 export default function Settings() {
+  const userString = localStorage.getItem("user");
+  const currentUser = userString ? JSON.parse(userString) : null;
+  const isAdmin = currentUser?.role === "admin";
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,6 +22,14 @@ export default function Settings() {
   const [updatingUser, setUpdatingUser] = useState(false);
   const [updateError, setUpdateError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Non-Admin Profile Form States
+  const [profileName, setProfileName] = useState(currentUser?.name || "");
+  const [profileEmail, setProfileEmail] = useState(currentUser?.email || "");
+  const [profilePassword, setProfilePassword] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
 
   const fetchUsers = async () => {
     try {
@@ -34,8 +46,39 @@ export default function Settings() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    if (isAdmin) {
+      fetchUsers();
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    setProfileError("");
+    setProfileSuccess("");
+
+    try {
+      const response = await api.put(`/users/${currentUser.id}`, {
+        name: profileName,
+        password: profilePassword || undefined,
+      });
+
+      // Update localStorage with updated user data
+      const updatedUser = { ...currentUser, name: response.data.data.name };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      
+      setProfileSuccess("Profil berhasil diperbarui!");
+      setProfilePassword(""); // Reset password field
+    } catch (err) {
+      console.error(err);
+      const msg = err.response?.data?.message || "Gagal memperbarui profil.";
+      setProfileError(msg);
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const handleOpenUpdateModal = (user) => {
     setUpdateUserId(user.id);
@@ -118,111 +161,190 @@ export default function Settings() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 relative z-10">
             <div>
               <h2 className="font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface uppercase tracking-tight">
-                User Management
+                {isAdmin ? "User Management" : "Account Settings"}
               </h2>
               <p className="font-body-lg text-on-surface-variant mt-2">
-                Manage roles and system permissions for your workspace.
+                {isAdmin 
+                  ? "Manage roles and system permissions for your workspace."
+                  : "Update your personal profile information."}
               </p>
             </div>
           </div>
 
-          {/* Quick Stats Bento Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter relative z-10">
-            {/* Total Active Users */}
-            <div className="bg-tertiary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
-              <p className="font-label-mono text-on-tertiary-container mb-2 uppercase">Total Active Users</p>
-              <p className="font-display-lg text-4xl font-black">{users.length}</p>
-              <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="person">person</span>
-            </div>
+          {isAdmin ? (
+            <>
+              {/* Quick Stats Bento Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter relative z-10">
+                {/* Total Active Users */}
+                <div className="bg-tertiary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
+                  <p className="font-label-mono text-on-tertiary-container mb-2 uppercase">Total Active Users</p>
+                  <p className="font-display-lg text-4xl font-black">{users.length}</p>
+                  <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="person">person</span>
+                </div>
 
-            {/* Pending Role Update */}
-            <div className="bg-primary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
-              <p className="font-label-mono text-on-primary-container mb-2 uppercase">Pending Role Update</p>
-              <p className="font-display-lg text-4xl font-black">02</p>
-              <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="mail">mail</span>
-            </div>
+                {/* Pending Role Update */}
+                <div className="bg-primary-container border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
+                  <p className="font-label-mono text-on-primary-container mb-2 uppercase">Pending Role Update</p>
+                  <p className="font-display-lg text-4xl font-black">02</p>
+                  <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="mail">mail</span>
+                </div>
 
-            {/* Security Alerts */}
-            <div className="bg-secondary-fixed border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
-              <p className="font-label-mono text-on-secondary-container mb-2 uppercase">Security Alerts</p>
-              <p className="font-display-lg text-4xl font-black text-error">00</p>
-              <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="security">security</span>
-            </div>
-          </div>
-
-          {/* User List Section */}
-          <div className="bg-surface border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative z-10">
-            {/* Table Header */}
-            <div className="grid grid-cols-12 border-b-4 border-black bg-surface-container-high p-4 font-label-mono uppercase tracking-widest text-on-surface-variant font-bold text-sm">
-              <div className="col-span-4">User Profile</div>
-              <div className="col-span-4">Email Address</div>
-              <div className="col-span-2">Role</div>
-              <div className="col-span-2 text-right">Actions</div>
-            </div>
-
-            {loading ? (
-              <div className="p-12 text-center font-label-mono text-black font-bold uppercase animate-pulse">
-                ⚡ Loading users database...
+                {/* Security Alerts */}
+                <div className="bg-secondary-fixed border-4 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
+                  <p className="font-label-mono text-on-secondary-container mb-2 uppercase">Security Alerts</p>
+                  <p className="font-display-lg text-4xl font-black text-error">00</p>
+                  <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl opacity-10 group-hover:rotate-12 transition-transform" data-icon="security">security</span>
+                </div>
               </div>
-            ) : users.length === 0 ? (
-              <div className="p-12 text-center font-label-mono text-outline">
-                No users found.
-              </div>
-            ) : (
-              users.map((user) => {
-                const roleColor =
-                  user.role === "admin"
-                    ? "bg-secondary text-white font-bold"
-                    : user.role === "manager"
-                      ? "bg-primary-container text-black font-bold"
-                      : "bg-tertiary-fixed-dim text-black font-bold";
 
-                // Generate consistent mockup avatar if not present
-                const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
+              {/* User List Section */}
+              <div className="bg-surface border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative z-10">
+                {/* Table Header */}
+                <div className="grid grid-cols-12 border-b-4 border-black bg-surface-container-high p-4 font-label-mono uppercase tracking-widest text-on-surface-variant font-bold text-sm">
+                  <div className="col-span-4">User Profile</div>
+                  <div className="col-span-4">Email Address</div>
+                  <div className="col-span-2">Role</div>
+                  <div className="col-span-2 text-right">Actions</div>
+                </div>
 
-                return (
-                  <div key={user.id} className="grid grid-cols-12 items-center p-6 border-b-4 border-black hover:bg-surface-container transition-colors group">
-                    <div className="col-span-4 flex items-center gap-4">
-                      <div className="w-12 h-12 border-2 border-black bg-primary-fixed flex items-center justify-center font-display-lg text-lg font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
-                        {initial}
-                      </div>
-                      <div>
-                        <p className="font-body-lg text-md font-bold text-black">{user.name}</p>
-                        <p className="font-label-mono text-xs opacity-60">ID: TM-{user.id}</p>
-                      </div>
-                    </div>
-                    <div className="col-span-4 font-label-mono text-sm text-black">{user.email}</div>
-                    <div className="col-span-2">
-                      <span className={`${roleColor} px-3 py-1 border-2 border-black font-label-mono text-xs uppercase`}>
-                        {user.role || "Member"}
-                      </span>
-                    </div>
-                    <div className="col-span-2 text-right">
-                      <button
-                        onClick={() => handleOpenUpdateModal(user)}
-                        className="p-2 hover:bg-primary-container border-2 border-transparent hover:border-black transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-                      >
-                        <span className="material-symbols-outlined text-black font-bold">more_vert</span>
-                      </button>
-                    </div>
+                {loading ? (
+                  <div className="p-12 text-center font-label-mono text-black font-bold uppercase animate-pulse">
+                    ⚡ Loading users database...
                   </div>
-                );
-              })
-            )}
-          </div>
+                ) : users.length === 0 ? (
+                  <div className="p-12 text-center font-label-mono text-outline">
+                    No users found.
+                  </div>
+                ) : (
+                  users.map((user) => {
+                    const roleColor =
+                      user.role === "admin"
+                        ? "bg-secondary text-white font-bold"
+                        : user.role === "manager"
+                          ? "bg-primary-container text-black font-bold"
+                          : "bg-tertiary-fixed-dim text-black font-bold";
 
-          {/* Bottom Pagination / Status */}
-          <div className="flex justify-between items-center mt-8 p-6 bg-on-surface text-surface border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-10">
-            <p className="font-label-mono text-white">Displaying {users.length} users</p>
-            <div className="flex gap-4">
-              <button className="px-6 py-2 border-2 border-white bg-transparent hover:bg-white hover:text-on-surface transition-all font-bold active:translate-x-0.5 active:translate-y-0.5">
-                PREV
-              </button>
-              <button className="px-6 py-2 border-2 border-white bg-white text-on-surface hover:translate-x-1 hover:translate-y-1 hover:shadow-[-4px_-4px_0px_0px_rgba(255,255,255,0.5)] transition-all font-bold active:translate-x-0.5 active:translate-y-0.5">
-                NEXT
-              </button>
+                    // Generate consistent mockup avatar if not present
+                    const initial = user.name ? user.name.charAt(0).toUpperCase() : "U";
+
+                    return (
+                      <div key={user.id} className="grid grid-cols-12 items-center p-6 border-b-4 border-black hover:bg-surface-container transition-colors group">
+                        <div className="col-span-4 flex items-center gap-4">
+                          <div className="w-12 h-12 border-2 border-black bg-primary-fixed flex items-center justify-center font-display-lg text-lg font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                            {initial}
+                          </div>
+                          <div>
+                            <p className="font-body-lg text-md font-bold text-black">{user.name}</p>
+                            <p className="font-label-mono text-xs opacity-60">ID: TM-{user.id}</p>
+                          </div>
+                        </div>
+                        <div className="col-span-4 font-label-mono text-sm text-black">{user.email}</div>
+                        <div className="col-span-2">
+                          <span className={`${roleColor} px-3 py-1 border-2 border-black font-label-mono text-xs uppercase`}>
+                            {user.role || "Member"}
+                          </span>
+                        </div>
+                        <div className="col-span-2 text-right">
+                          <button
+                            onClick={() => handleOpenUpdateModal(user)}
+                            className="p-2 hover:bg-primary-container border-2 border-transparent hover:border-black transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          >
+                            <span className="material-symbols-outlined text-black font-bold">more_vert</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Bottom Pagination / Status */}
+              <div className="flex justify-between items-center mt-8 p-6 bg-on-surface text-surface border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-10">
+                <p className="font-label-mono text-white">Displaying {users.length} users</p>
+                <div className="flex gap-4">
+                  <button className="px-6 py-2 border-2 border-white bg-transparent hover:bg-white hover:text-on-surface transition-all font-bold active:translate-x-0.5 active:translate-y-0.5">
+                    PREV
+                  </button>
+                  <button className="px-6 py-2 border-2 border-white bg-white text-on-surface hover:translate-x-1 hover:translate-y-1 hover:shadow-[-4px_-4px_0px_0px_rgba(255,255,255,0.5)] transition-all font-bold active:translate-x-0.5 active:translate-y-0.5">
+                    NEXT
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Profile Settings Form for non-admin */
+            <div className="max-w-2xl bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative z-10 space-y-6 text-left">
+              {profileSuccess && (
+                <div className="flex items-center gap-2 p-4 border-2 border-black bg-primary-container text-black font-bold">
+                  <span className="material-symbols-outlined">check_circle</span>
+                  <span className="font-label-mono text-sm">{profileSuccess}</span>
+                </div>
+              )}
+
+              {profileError && (
+                <div className="flex items-center gap-2 p-4 border-2 border-black bg-error-container text-error font-bold">
+                  <span className="material-symbols-outlined">error</span>
+                  <span className="font-label-mono text-sm">{profileError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                {/* Name */}
+                <div className="space-y-2 flex flex-col">
+                  <label className="font-label-mono uppercase text-sm text-on-surface font-bold" htmlFor="profile_name">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="profile_name"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    required
+                    disabled={profileSaving}
+                    className="w-full border-4 border-black p-4 font-label-mono focus:bg-primary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black"
+                  />
+                </div>
+
+                {/* Gmail Address - Aktif tetapi tampilan disable */}
+                <div className="space-y-2 flex flex-col">
+                  <label className="font-label-mono uppercase text-sm text-on-surface font-bold" htmlFor="profile_email">
+                    Gmail Address
+                  </label>
+                  <input
+                    type="email"
+                    id="profile_email"
+                    value={profileEmail}
+                    disabled
+                    className="w-full border-4 border-black p-4 font-label-mono bg-gray-100 text-gray-500 cursor-not-allowed opacity-70"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2 flex flex-col">
+                  <label className="font-label-mono uppercase text-sm text-on-surface font-bold" htmlFor="profile_password">
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    id="profile_password"
+                    value={profilePassword}
+                    onChange={(e) => setProfilePassword(e.target.value)}
+                    placeholder="Leave blank to keep current password"
+                    disabled={profileSaving}
+                    className="w-full border-4 border-black p-4 font-label-mono focus:bg-primary-container focus:outline-none transition-all focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={profileSaving}
+                  className="w-full bg-primary-container border-4 border-black p-4 font-display-lg text-on-primary-container font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] btn-press uppercase tracking-widest text-black disabled:opacity-50"
+                >
+                  {profileSaving ? "Saving..." : "Save Changes"}
+                </button>
+              </form>
             </div>
-          </div>
+          )}
         </div>
       </main>
 

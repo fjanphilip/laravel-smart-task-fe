@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 import api from "../services/api";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { notifications } = useNotifications();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,6 +69,16 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  // Auto-refresh dashboard data when a new task status notification is received
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const latestNotif = notifications[0];
+      if (latestNotif.task_id) {
+        fetchDashboardData();
+      }
+    }
+  }, [notifications]);
 
   const blockedTaskCount = tasks.filter(
     (task) => task.status === "blocked",
